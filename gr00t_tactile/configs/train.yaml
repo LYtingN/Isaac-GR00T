@@ -1,0 +1,33 @@
+model:
+  base_model_path: nvidia/GR00T-N1.7-3B
+  tactile_encoder: resnet18
+  tactile_image_size: [128, 128]
+  resnet_pretrained: false
+  tactile_token_type: image
+  fusion: post_vlm_context_tokens
+  tune_llm: false
+  tune_visual: false
+  tune_projector: true
+  tune_diffusion_model: true
+
+data:
+  dataset_path: gr00t_tactile/dataset/2026-09-24-17-17-20
+  embodiment_tag: unitree_g1_sonic
+  modality_config_path: configs/sonic_tactile_modality.py
+  tactile_parts:
+    - upper_body
+  tactile_layout_path: null
+  tactile_value_min: 0.0
+  tactile_value_max: 255.0
+  shard_size: 1024
+  episode_sampling_rate: 0.1
+
+training:
+  output_dir: outputs/gr00t_tactile
+  max_steps: 20000
+  global_batch_size: 32
+  learning_rate: 0.0001
+  num_gpus: 1
+  num_workers: 2
+  save_steps: 1000
+  use_wandb: false

@@ -28,6 +28,7 @@ dependencies = [
     "datasets==3.6.0",
     "cryptography>=46.0.7",
     "einops==0.8.1",
+    "gr00t-tactile",
     "gitpython==3.1.50",
     "jsonlines==4.0.0",
     "gymnasium==1.2.2",
@@ -76,7 +77,7 @@ dev = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["gr00t*"]
+include = ["gr00t", "gr00t.*"]
 
 [tool.uv]
 required-environments = [
@@ -85,6 +86,7 @@ required-environments = [
 ]
 
 [tool.uv.sources]
+gr00t-tactile = { path = "gr00t_tactile", editable = true }
 torch = [
     { index = "pytorch-cu128", marker = "sys_platform == 'linux'" },
 ]
