@@ -5,6 +5,7 @@ from copy import deepcopy
 from gr00t.configs.data.embodiment_configs import MODALITY_CONFIGS
 from gr00t.data.types import ModalityConfig
 
+
 EMBODIMENT = "unitree_g1_sonic"
 TACTILE_PARTS = ("upper_body",)
 

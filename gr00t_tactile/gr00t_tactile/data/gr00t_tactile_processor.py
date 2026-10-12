@@ -109,9 +109,7 @@ class Gr00tN1d7TactileProcessor(Gr00tN1d7Processor):
         }
         if not tactile_fields:
             raise ValueError(f"No tactile state fields in {metadata_path}")
-        readings = {
-            key: np.zeros(count, dtype=np.float32) for key, count in tactile_fields.items()
-        }
+        readings = {key: np.zeros(count, dtype=np.float32) for key, count in tactile_fields.items()}
         layout = self._ensure_tactile_processor(readings).layout
         expected = {zone.key: int(np.prod(zone.grid_shape)) for zone in layout.zones}
         if tactile_fields != expected:

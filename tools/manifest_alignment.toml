@@ -27,3 +27,8 @@ reason = "patch sync lag pending owner alignment to a single version"
 # until owner decides whether to pin main.
 [allowed_drifts.dm-tree]
 reason = "loose on main, exact ==0.1.8 on Jetson — pending owner alignment"
+
+# The tactile extension pins Torch 2.9 and uses the root CUDA 12.8 environment.
+# Orin/Thor/Spark have different Torch stacks and do not install this package.
+[allowed_drifts.gr00t-tactile]
+reason = "root-only tactile extension; separate deployment Torch stacks are not yet supported"
