@@ -29,7 +29,9 @@ def build_config(settings: dict, config_path: Path):
     data_settings = settings.get("data", {})
     training_settings = settings.get("training", {})
 
-    modality_path = Path(data_settings.get("modality_config_path", "configs/sonic_tactile_modality.py"))
+    modality_path = Path(
+        data_settings.get("modality_config_path", "configs/sonic_tactile_modality.py")
+    )
     if not modality_path.is_absolute():
         modality_path = config_path.parent.parent / modality_path
     dataset_path = data_settings.get("dataset_path")
@@ -94,6 +96,8 @@ def build_config(settings: dict, config_path: Path):
     config.training.dataloader_num_workers = int(training_settings.get("num_workers", 2))
     config.training.use_wandb = bool(training_settings.get("use_wandb", False))
     config.training.save_steps = int(training_settings.get("save_steps", 1000))
+    config.training.save_only_model = bool(training_settings.get("save_only_model", False))
+    config.training.logging_steps = int(training_settings.get("logging_steps", 10))
     config.data.shard_size = int(data_settings.get("shard_size", 1024))
     config.data.episode_sampling_rate = float(data_settings.get("episode_sampling_rate", 0.1))
     return config

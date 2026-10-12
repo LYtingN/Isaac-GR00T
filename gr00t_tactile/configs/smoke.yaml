@@ -1,0 +1,10 @@
+data:
+  dataset_path: gr00t_tactile/dataset/2026-09-24-17-17-20
+
+training:
+  output_dir: outputs/gr00t_tactile_smoke
+  max_steps: 3
+  global_batch_size: 1
+  save_steps: 3
+  save_only_model: true
+  logging_steps: 1

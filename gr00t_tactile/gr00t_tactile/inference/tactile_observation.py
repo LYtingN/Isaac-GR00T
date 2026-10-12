@@ -10,7 +10,7 @@ def add_tactile_state(
     tactile_message: dict | None,
     parts: tuple[str, ...] = ("upper_body",),
 ) -> dict:
-    """Return an observation with ``state.tactile_*`` arrays of shape ``[1, 1, D]``."""
+    """Return ``[1, 1, D]`` tactile arrays; missing zones use NaN for invalid masks."""
 
     from jq_skin.layout import BODY_PART_LAYOUTS, BodyPart
 
@@ -21,7 +21,7 @@ def add_tactile_state(
         for zone in BODY_PART_LAYOUTS[part].zones:
             values = part_message.get(zone.name) if part_message else None
             if values is None:
-                vector = np.zeros(zone.channel_count, dtype=np.float32)
+                vector = np.full(zone.channel_count, np.nan, dtype=np.float32)
             else:
                 vector = np.asarray(values, dtype=np.float32).reshape(-1)
                 if vector.size != zone.channel_count:

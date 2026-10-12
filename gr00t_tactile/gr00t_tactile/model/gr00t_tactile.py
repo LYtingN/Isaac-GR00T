@@ -104,6 +104,15 @@ class Gr00tN1d7Tactile(Gr00tN1d7):
             )
         )
 
+    def _init_weights(self, module: torch.nn.Module) -> None:
+        super()._init_weights(module)
+        if isinstance(module, TactileResNet18Encoder):
+            # from_pretrained suppresses constructor initialization. These direct
+            # Parameters need the HF initialization hook when absent in the base
+            # checkpoint; already-loaded tactile parameters are left untouched.
+            torch.nn.init.normal_(module.modality_embedding, std=0.02)
+            torch.nn.init.normal_(module.position_embedding, std=0.02)
+
     def _prepare_input_with_tactile(
         self, inputs: dict
     ) -> tuple[BatchFeature, BatchFeature, torch.Tensor | None, torch.Tensor | None]:
@@ -146,9 +155,7 @@ class Gr00tN1d7Tactile(Gr00tN1d7):
             if tactile_mask is not None:
                 tactile_mask = torch.as_tensor(tactile_mask, device=encoder_parameter.device)
 
-        tactile_tokens, tactile_token_mask = self.tactile_encoder(
-            tactile_values, tactile_mask
-        )
+        tactile_tokens, tactile_token_mask = self.tactile_encoder(tactile_values, tactile_mask)
         tactile_tokens = tactile_tokens.to(device=vl_tokens.device, dtype=vl_tokens.dtype)
         tactile_token_mask = tactile_token_mask.to(device=vl_tokens.device)
 
@@ -200,9 +207,7 @@ class Gr00tN1d7Tactile(Gr00tN1d7):
         )
         return self.action_head(backbone_output, action_inputs)
 
-    def get_action(
-        self, inputs: dict, options: dict[str, Any] | None = None
-    ) -> BatchFeature:
+    def get_action(self, inputs: dict, options: dict[str, Any] | None = None) -> BatchFeature:
         backbone_inputs, action_inputs, tactile_values, tactile_mask = (
             self._prepare_input_with_tactile(inputs)
         )

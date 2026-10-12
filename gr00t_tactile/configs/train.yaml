@@ -25,7 +25,7 @@ data:
 training:
   output_dir: outputs/gr00t_tactile
   max_steps: 20000
-  global_batch_size: 32
+  global_batch_size: 1
   learning_rate: 0.0001
   num_gpus: 1
   num_workers: 2

@@ -30,7 +30,7 @@ import torch
 import torchvision.transforms.v2 as transforms
 from transformers import AutoProcessor
 from transformers.feature_extraction_utils import BatchFeature
-from transformers.utils import cached_file
+from transformers.utils import cached_file, is_offline_mode
 
 from gr00t.configs.data.embodiment_configs import ModalityConfig
 from gr00t.data.embodiment_tags import EmbodimentTag
@@ -126,6 +126,20 @@ def build_processor(model_name: str, transformers_loading_kwargs: dict) -> Qwen3
             "Qwen3VLProcessor is not available. "
             "Please upgrade transformers: pip install transformers>=4.52.0"
         )
+    if transformers_loading_kwargs.get("local_files_only", False) or is_offline_mode():
+        # Transformers 4.57's tokenizer regex check queries model_info for repo
+        # IDs even in offline mode. A local snapshot skips that network probe.
+        hub_keys = ("cache_dir", "revision", "subfolder", "token", "_commit_hash")
+        hub_kwargs = {
+            key: transformers_loading_kwargs[key]
+            for key in hub_keys
+            if key in transformers_loading_kwargs
+        }
+        config_file = cached_file(model_name, "config.json", local_files_only=True, **hub_kwargs)
+        model_name = str(Path(config_file).parent)
+        transformers_loading_kwargs = dict(transformers_loading_kwargs)
+        # The resolved directory already includes the requested subfolder.
+        transformers_loading_kwargs.pop("subfolder", None)
     return Qwen3VLProcessor.from_pretrained(model_name, **transformers_loading_kwargs)
 
 
@@ -805,7 +819,12 @@ class Gr00tN1d7Processor(BaseProcessor):
         return [main_config_file, statistics_file, embodiment_id_file]
 
     @classmethod
-    def from_pretrained(cls, pretrained_model_name_or_path: str | Path, **kwargs):
+    def from_pretrained(
+        cls,
+        pretrained_model_name_or_path: str | Path,
+        active_embodiment_tags: list[str] | None = None,
+        **kwargs,
+    ):
         transformers_loading_kwargs = kwargs.pop(
             "transformers_loading_kwargs", {"trust_remote_code": True}
         )
@@ -883,6 +902,23 @@ class Gr00tN1d7Processor(BaseProcessor):
                     override = kwargs.pop(key)
                     if override is not None:
                         processor_kwargs[key] = override
+        if active_embodiment_tags is not None:
+            if not active_embodiment_tags:
+                raise ValueError("active_embodiment_tags must not be empty")
+            modality_configs = processor_kwargs["modality_configs"]
+            missing = set(active_embodiment_tags) - modality_configs.keys()
+            if missing:
+                raise ValueError(
+                    f"Missing modality configs for active embodiments: {sorted(missing)}"
+                )
+            # Validate horizons and statistics for the embodiments being trained,
+            # rather than unrelated configs retained in the base checkpoint.
+            processor_kwargs["modality_configs"] = {
+                tag: modality_configs[tag] for tag in active_embodiment_tags
+            }
+            processor_kwargs["statistics"] = {
+                tag: statistics[tag] for tag in active_embodiment_tags if tag in statistics
+            }
         return cls(**processor_kwargs, transformers_loading_kwargs=transformers_loading_kwargs)
 
 

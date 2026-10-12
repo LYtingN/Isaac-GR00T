@@ -66,7 +66,9 @@ class Gr00tN1d7TactilePipeline(Gr00tN1d7Pipeline):
                     "Checkpoint mismatch outside the new tactile encoder: "
                     f"missing={missing}, unexpected={unexpected}, mismatched={mismatched}"
                 )
-            logging.info("Initialized tactile encoder; loaded all GR00T weights from %s", checkpoint)
+            logging.info(
+                "Initialized tactile encoder; loaded all GR00T weights from %s", checkpoint
+            )
         else:
             model = self.model_class(
                 self.model_config,
@@ -79,7 +81,9 @@ class Gr00tN1d7TactilePipeline(Gr00tN1d7Pipeline):
                     model.config.to_filtered_json()
                 )
         total = sum(parameter.numel() for parameter in model.parameters())
-        trainable = sum(parameter.numel() for parameter in model.parameters() if parameter.requires_grad)
+        trainable = sum(
+            parameter.numel() for parameter in model.parameters() if parameter.requires_grad
+        )
         logging.info("Model parameters: %s total, %s trainable", f"{total:,}", f"{trainable:,}")
         return model
 
@@ -90,6 +94,8 @@ class Gr00tN1d7TactilePipeline(Gr00tN1d7Pipeline):
 
         processor = self.processor_class.from_pretrained(
             checkpoint,
+            active_embodiment_tags=[spec.embodiment_tag for spec in self.config.data.datasets],
+            transformers_loading_kwargs=self.transformers_loading_kwargs,
             modality_configs=self.config.data.modality_configs,
             use_percentiles=self.model_config.use_percentiles,
             image_crop_size=self.model_config.image_crop_size,
